@@ -1,4 +1,4 @@
-# wazzapp
+# box_player
 
 A new Flutter project.
 

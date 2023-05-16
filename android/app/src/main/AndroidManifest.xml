@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.wazzapp">
+    package="com.example.box_player">
    <application
-        android:label="wazzapp"
+        android:label="box_player"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
