@@ -3,8 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'PROVIDERS/app_provider.dart';
-import 'PROVIDERS/audio_provider.dart';
-import 'PROVIDERS/video_provider.dart';
+import 'PROVIDERS/media_provider.dart';
 import 'UI/screens/folders_screen.dart';
 import 'UI/utils/constants.dart';
 
@@ -25,8 +24,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AppProvider()),
-        ChangeNotifierProvider(create: (_) => VideoProvider()),
-        ChangeNotifierProvider(create: (_) => AudioProvider())
+        ChangeNotifierProvider(create: (_) => MediaProvider()),
       ],
       child: MaterialApp(
         title: 'Box Player',

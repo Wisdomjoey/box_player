@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 
-import '../../PROVIDERS/video_provider.dart';
 import '../utils/constants.dart';
 import 'layout_dialog.dart';
 
@@ -45,8 +43,7 @@ class Appbar extends StatelessWidget implements PreferredSizeWidget {
           [
             IconButton(
               onPressed: () {
-                Provider.of<VideoProvider>(context, listen: false)
-                    .initializeVideoDirs();
+                
               },
               icon: const Icon(
                 Icons.search_rounded,

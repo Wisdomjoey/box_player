@@ -45,6 +45,12 @@ dependencies:
   video_player: ^2.6.1
   audioplayers: ^4.1.0
   flutter_native_splash: ^2.3.0
+  isolate_handler: ^1.0.2
+  fluttertoast: ^8.2.2
+  carousel_slider: ^4.2.1
+  ffmpeg_kit_flutter: ^5.1.0
+  video_thumbnail: ^0.5.3
+  flutter_image_compress: ^2.0.3
 
 dev_dependencies:
   flutter_test:

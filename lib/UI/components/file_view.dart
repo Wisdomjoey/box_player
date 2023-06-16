@@ -87,7 +87,7 @@ class FileView extends StatelessWidget {
                           child: Container(
                             margin: const EdgeInsets.only(top: 5, left: 5),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 5, vertical: 1),
+                                horizontal: 4),
                             decoration: BoxDecoration(
                                 color: Colors.red,
                                 borderRadius: BorderRadius.circular(2)),
@@ -103,7 +103,7 @@ class FileView extends StatelessWidget {
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 5, right: 5),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 5, vertical: 1),
+                                horizontal: 4),
                             decoration: BoxDecoration(
                                 color: const Color.fromARGB(202, 0, 0, 0),
                                 borderRadius: BorderRadius.circular(2)),
