@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../PROVIDERS/app_provider.dart';
+import '../../PROVIDERS/media_provider.dart';
 import '../utils/constants.dart';
 import '../widgets/tip_icon_widget.dart';
 
@@ -46,7 +46,7 @@ class BottomBarWidget extends StatelessWidget {
                 label: 'Video'),
           ],
         ),
-        Provider.of<AppProvider>(context).selected > 0
+        Provider.of<MediaProvider>(context).selected.isNotEmpty
             ? Container(
                 width: double.maxFinite,
                 padding: const EdgeInsets.symmetric(vertical: 5),
