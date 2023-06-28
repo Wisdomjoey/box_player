@@ -1,15 +1,17 @@
+import 'package:box_player/UI/components/player.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart' as path;
 
 import '../../PROVIDERS/app_provider.dart';
-import '../../PROVIDERS/media_provider.dart';
+import '../../PROVIDERS/video_provider.dart';
 import '../utils/constants.dart';
 
 class FileView extends StatelessWidget {
-  final List videos;
-
-  const FileView({super.key, required this.videos});
+  final String directory;
+  final ScrollController controller;
+  const FileView(
+      {super.key, required this.directory, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -20,9 +22,15 @@ class FileView extends StatelessWidget {
         return Future.delayed(Duration.zero, () => false);
       },
       child: Consumer(
-        builder: (context, MediaProvider provider, child) {
-          return Column(
-            children: videos.map((e) {
+        builder: (context, VideoProvider provider, child) {
+          List videos = provider.folderDirs
+              .firstWhere((ele) => ele['pathName'] == directory)['videos'];
+
+          return ListView.builder(
+            controller: controller,
+            itemCount: videos.length,
+            itemBuilder: (context, index) {
+              final e = videos[index].toString();
               bool selected = provider.selected.contains(e);
 
               return InkWell(
@@ -33,7 +41,13 @@ class FileView extends StatelessWidget {
                     } else {
                       provider.addSelected(e);
                     }
-                  } else {}
+                  } else {
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => Player(
+                        videoPath: e,
+                      ),
+                    ));
+                  }
                 },
                 onLongPress: () {
                   if (selected) {
@@ -131,9 +145,10 @@ class FileView extends StatelessWidget {
                       ),
                       Expanded(
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              path.basenameWithoutExtension(e),
+                              path.basename(e),
                               style: const TextStyle(
                                 color: Constants.textColor,
                                 fontSize: 14,
@@ -161,7 +176,7 @@ class FileView extends StatelessWidget {
                   ),
                 ),
               );
-            }).toList(),
+            },
           );
         },
       ),

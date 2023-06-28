@@ -1,258 +1,20 @@
-import 'dart:async';
 import 'dart:io';
-import 'dart:isolate';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
-import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
-import 'package:flutter/services.dart';
 import 'package:isolate_handler/isolate_handler.dart';
 import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
 
 import '../UI/utils/constants.dart';
 import '../UI/utils/helpers.dart';
 
-enum Status { uninitialized, processing, finished }
-
-class MediaProvider extends ChangeNotifier {
-  final List<String> _videos = [];
-  List<String> get videos => _videos;
-
-  final List<Map<String, dynamic>> _videoDirs = [];
-  List<Map<String, dynamic>> get videoDirs => _videoDirs;
-
-  final Map<String, Map<String, Map<String, dynamic>>> _videoInfos = {};
-  Map<String, Map<String, Map<String, dynamic>>> get videoInfos => _videoInfos;
-
-  final List<String> _selected = [];
-  List<String> get selected => _selected;
-
-  Status _status = Status.uninitialized;
-  Status get status => _status;
-
-  int isolateCount = 0;
-
-  addSelected(String name) {
-    _selected.add(name);
-    notifyListeners();
-  }
-
-  removeSelected(String name) {
-    _selected.remove(name);
-    notifyListeners();
-  }
-
-  clearSelected() {
-    _selected.clear();
-    notifyListeners();
-  }
-
-  Future fetchMediaWithIsolate() async {
-    _status = Status.processing;
-    notifyListeners();
-
-    isolateCount++;
-    IsolateHandler isolate = IsolateHandler();
-
-    isolate.spawn<String>(
-      getStorageDirs,
-      name: 'getStorageDirs',
-      onReceive: (message) {
-        debugPrint(message);
-        isolate.kill('getStorageDirs');
-      },
-      onInitialized: () =>
-          isolate.send('Isolate Started', to: 'getStorageDirs'),
-    );
-
-    ReceivePort port = ReceivePort();
-
-    IsolateNameServer.registerPortWithName(port.sendPort, 'getStorageDirs_1');
-    port.listen((data) async {
-      isolateCount--;
-
-      debugPrint('STORAGE DIRS GOTTEN');
-      _videos.addAll(data['files']);
-
-      for (var i = 0; i < data['dirs'].length; i++) {
-        searchDirWithIsolate(data['dirs'][i], i);
-      }
-
-      List<Map<dynamic, dynamic>?> mediaProps = [];
-
-      for (String ele in data['files']) {
-        final mediaInfo = await FFprobeKit.getMediaInformation(ele);
-
-        mediaProps.add(mediaInfo.getMediaInformation()?.getAllProperties());
-
-        mediaInfo.cancel();
-      }
-
-      if (mediaProps.isNotEmpty) {
-        handleFilesWithIsolate(data['files'], 10101, mediaProps);
-      }
-
-      port.close();
-      IsolateNameServer.removePortNameMapping('getStorageDirs_1');
-    });
-  }
-
-  static getStorageDirs(Map<String, dynamic> context) async {
-    try {
-      HandledIsolateMessenger messenger = HandledIsolate.initialize(context);
-
-      String home =
-          (await getExternalStorageDirectory())!.path.split('Android')[0];
-      Directory homeDir = Directory(home);
-      List<FileSystemEntity> homeDirs = homeDir.listSync();
-      List<String> files = [];
-      List<String> dirs = [];
-
-      for (var ele in homeDirs) {
-        if (ele.path.contains('Android')) {
-          dirs.add('${ele.path}/media');
-        } else if (ele is File &&
-            Constants.videoFormats.contains(path.extension(ele.path))) {
-          files.add(ele.path);
-        } else if (ele is Directory) {
-          dirs.add(ele.path);
-        }
-      }
-
-      final send = IsolateNameServer.lookupPortByName('getStorageDirs_1');
-
-      if (send != null) {
-        send.send({'dirs': dirs, 'files': files});
-      }
-
-      messenger.send('done');
-    } catch (e) {
-      if (kDebugMode) {
-        print(e);
-      }
-    }
-  }
-
-  searchDirWithIsolate(String dirPath, int id) async {
-    isolateCount++;
-    IsolateHandler isolate = IsolateHandler();
-
-    isolate.spawn<Map<String, dynamic>>(
-      searchDir,
-      name: 'searchDir$id',
-      onReceive: (message) {
-        debugPrint(message['msg']);
-        isolate.kill('searchDir$id');
-      },
-      onInitialized: () =>
-          isolate.send({'dirPath': dirPath, 'id': id}, to: 'searchDir$id'),
-    );
-
-    ReceivePort port = ReceivePort();
-
-    IsolateNameServer.registerPortWithName(port.sendPort, 'searchDir_$id');
-    port.listen((data) async {
-      isolateCount--;
-
-      debugPrint('GOTTEN FILES IN DIR');
-      _videos.addAll(data);
-
-      List<Map<dynamic, dynamic>?> mediaProps = [];
-
-      for (String ele in data) {
-        final mediaInfo = await FFprobeKit.getMediaInformation(ele);
-
-        mediaProps.add(mediaInfo.getMediaInformation()?.getAllProperties());
-
-        mediaInfo.cancel();
-      }
-
-      if (mediaProps.isNotEmpty) {
-        handleFilesWithIsolate(data, id, mediaProps);
-      }
-
-      port.close();
-      IsolateNameServer.removePortNameMapping('searchDir_$id');
-    });
-  }
-
-  static searchDir(Map<String, dynamic> context) async {
-    try {
-      HandledIsolateMessenger messenger = HandledIsolate.initialize(context);
-
-      messenger.listen((msg) {
-        Directory dir = Directory(msg['dirPath']);
-        List<String> files = dir
-            .listSync(recursive: true)
-            .where((ele) =>
-                Constants.videoFormats.contains(path.extension(ele.path)))
-            .map((e) => e.path)
-            .toList();
-
-        final send =
-            IsolateNameServer.lookupPortByName('searchDir_${msg['id']}');
-
-        if (send != null) {
-          send.send(files);
-        }
-
-        messenger.send({'msg': 'done'});
-      });
-    } catch (e) {
-      if (kDebugMode) {
-        print(e);
-      }
-    }
-  }
-
-  handleFilesWithIsolate(
-      List<String> filePaths, int id, List<Map<dynamic, dynamic>?> mediaProps) {
-    isolateCount++;
-    IsolateHandler isolate = IsolateHandler();
-
-    isolate.spawn<Map<String, dynamic>>(
-      handleFiles,
-      name: 'handleFiles$id',
-      onReceive: (message) {
-        debugPrint(message['msg']);
-        isolate.kill('handleFiles$id');
-      },
-      onInitialized: () => isolate.send(
-          {'filePaths': filePaths, 'id': id, 'mediaProps': mediaProps},
-          to: 'handleFiles$id'),
-    );
-
-    ReceivePort port = ReceivePort();
-
-    IsolateNameServer.registerPortWithName(port.sendPort, 'handleFiles_$id');
-    port.listen((data) async {
-      isolateCount--;
-
-      debugPrint('FILES HAS BEEN SORTED');
-
-      _videoDirs.addAll(data['dirs']);
-      _videoInfos.addAll(data['infos']);
-
-      if (isolateCount == 0) {
-        _status = Status.finished;
-        notifyListeners();
-      }
-
-      port.close();
-      IsolateNameServer.removePortNameMapping('handleFiles_$id');
-    });
-  }
-
+class FileUtils {
   static handleFiles(Map<String, dynamic> context) {
     try {
       HandledIsolateMessenger messenger = HandledIsolate.initialize(context);
 
       messenger.listen((msg) async {
-        List<Map<String, dynamic>> dirs = [];
         Map<String, Map<String, Map<String, dynamic>>> infos = {};
-
-        dirs = await sortVideoPaths(msg['filePaths']);
 
         for (var i = 0; i < msg['filePaths'].length; i++) {
           final result =
@@ -263,11 +25,10 @@ class MediaProvider extends ChangeNotifier {
           });
         }
 
-        final send =
-            IsolateNameServer.lookupPortByName('handleFiles_${msg['id']}');
+        final send = IsolateNameServer.lookupPortByName('handleFiles_1');
 
         if (send != null) {
-          send.send({'dirs': dirs, 'infos': infos});
+          send.send(infos);
         }
 
         messenger.send({'msg': 'done'});
@@ -491,18 +252,5 @@ class MediaProvider extends ChangeNotifier {
     }
 
     return temp;
-  }
-
-  test() async {
-    const platform = MethodChannel('boxplayer.videos');
-    try {
-      List vids = await platform.invokeMethod('getVideos');
-
-      for (var ele in vids) {
-        print(ele);
-      }
-    } on PlatformException catch (e) {
-      print(e);
-    }
   }
 }

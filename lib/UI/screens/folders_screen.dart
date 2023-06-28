@@ -1,20 +1,22 @@
 import 'dart:async';
 
+import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import '../../PROVIDERS/app_provider.dart';
-import '../../PROVIDERS/media_provider.dart';
-import '../components/file_view.dart';
-import '../components/folder_view.dart';
-import '../utils/constants.dart';
-import '../utils/widget_data.dart';
+import '../../PROVIDERS/video_provider.dart';
 import '../components/appbar.dart';
 import '../components/bottom_bar.dart';
+import '../components/file_view.dart';
+import '../components/folder_view.dart';
 import '../components/video_appbar.dart';
+import '../utils/constants.dart';
+import '../utils/widget_data.dart';
 import '../widgets/tip_icon_widget.dart';
 
 class FoldersScreen extends StatefulWidget {
@@ -34,6 +36,11 @@ class _FoldersScreenState extends State<FoldersScreen> {
   @override
   void initState() {
     super.initState();
+
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      AsyncMemoizer().runOnce(() =>
+          Provider.of<VideoProvider>(context, listen: false).fetchMedia());
+    });
 
     _controller.addListener(() {
       if (_controller.position.atEdge) {
@@ -62,7 +69,7 @@ class _FoldersScreenState extends State<FoldersScreen> {
     permission();
 
     return Consumer(
-      builder: (context, MediaProvider provider, child) {
+      builder: (context, VideoProvider provider, child) {
         return DefaultTabController(
             length: WidgetData.videoTabs.length,
             child: Scaffold(
@@ -150,9 +157,10 @@ class _FoldersScreenState extends State<FoldersScreen> {
                               Provider.of<AppProvider>(context).view == 'file'
                                   ? TipIconWidget(
                                       icon: Icons.arrow_back,
-                                      onPressed: () =>
-                                          Provider.of<AppProvider>(context, listen: false)
-                                              .changeView('folder'),
+                                      onPressed: () => Provider.of<AppProvider>(
+                                              context,
+                                              listen: false)
+                                          .changeView('folder'),
                                     )
                                   : null,
                           showAcc:
@@ -192,18 +200,17 @@ class _FoldersScreenState extends State<FoldersScreen> {
                         thumbVisibility: showBar,
                         thickness: 7,
                         radius: const Radius.circular(7),
-                        child: SingleChildScrollView(
-                          controller: _controller,
-                          child: Provider.of<AppProvider>(context).view ==
-                                  'folder'
-                              ? const FolderView()
-                              : FileView(
-                                  videos: provider.videoDirs.firstWhere((ele) =>
-                                      ele['pathName'] ==
-                                      Provider.of<AppProvider>(context)
-                                          .appbarTitle)['videos'],
-                                ),
-                        ),
+                        child:
+                            Provider.of<AppProvider>(context).view == 'folder'
+                                ? FolderView(
+                                    controller: _controller,
+                                  )
+                                : FileView(
+                                    directory: Provider.of<AppProvider>(context,
+                                            listen: false)
+                                        .appbarTitle,
+                                    controller: _controller,
+                                  ),
                       ),
                     ),
               floatingActionButton: AnimatedScale(

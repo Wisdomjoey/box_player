@@ -1,4 +1,4 @@
-package com.media.box_player;
+package com.media.boxplayer;
 
 import android.os.Bundle;
 import android.database.Cursor;
@@ -8,8 +8,6 @@ import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.plugins.GeneratedPluginRegistrant;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
-import io.flutter.plugin.common.MethodChannel.Result;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -23,9 +21,9 @@ public class MainActivity extends FlutterActivity {
     super.onCreate(savedInstanceState);
     GeneratedPluginRegistrant.registerWith(getFlutterEngine());
 
-    new MethodChannel(getFlutterEngine().getDartExecutor().getBinaryMessenger(), CHANNEL_NAME).setMethodCallHandler(new MethodCallHandler() {
+    new MethodChannel(getFlutterEngine().getDartExecutor().getBinaryMessenger(), CHANNEL_NAME).setMethodCallHandler(new MethodChannel.MethodCallHandler() {
       @Override
-      public void onMethodCall(MethodCall call, Result result) {
+      public void onMethodCall(MethodCall call, MethodChannel.Result result) {
         if (call.method.equals("getVideos")) {
           ArrayList<String> videos = findVideos();
   

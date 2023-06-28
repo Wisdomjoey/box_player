@@ -56,26 +56,16 @@ class WidgetData {
   static const routePills = <List>[
     [
       'Music',
-      Stack(
-        alignment: AlignmentDirectional.center,
-        children: [
-          Icon(
-            Icons.folder_rounded,
-            size: 16,
-            color: Constants.textColor,
-          ),
-          Icon(
-            Icons.music_note_rounded,
-            size: 7,
-            color: Constants.darkPrimary,
-          ),
-        ],
-      )
+      Icon(
+        Icons.music_note_outlined,
+        size: 16,
+        color: Constants.textColor,
+      ),
     ],
     [
       'Share',
       Icon(
-        Icons.mobile_screen_share_rounded,
+        Icons.mobile_screen_share_outlined,
         size: 15,
         color: Constants.textColor,
       )
@@ -83,7 +73,7 @@ class WidgetData {
     [
       'Downloader',
       Icon(
-        Icons.smart_display_rounded,
+        Icons.smart_display_outlined,
         size: 16,
         color: Constants.textColor,
       )
@@ -94,14 +84,14 @@ class WidgetData {
         alignment: AlignmentDirectional.center,
         children: [
           Icon(
-            Icons.folder_rounded,
+            Icons.folder_outlined,
             size: 16,
             color: Constants.textColor,
           ),
           Icon(
-            Icons.lock_rounded,
-            size: 7,
-            color: Constants.darkPrimary,
+            Icons.lock,
+            size: 5,
+            color: Constants.textColor,
           ),
         ],
       )
