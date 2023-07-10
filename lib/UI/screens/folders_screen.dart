@@ -1,5 +1,6 @@
 import 'dart:async';
 
+// ignore: depend_on_referenced_packages
 import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -31,7 +32,17 @@ class _FoldersScreenState extends State<FoldersScreen> {
   bool showFloat = true;
   bool showBar = false;
   bool showBorder = false;
-  final ScrollController _controller = ScrollController();
+  final _controller = ScrollController();
+
+  checkScrollPosition() {
+    if (_controller.position.atEdge) {
+      if (_controller.position.pixels == 0) {
+        setState(() => showBorder = false);
+      }
+    } else {
+      setState(() => showBorder = true);
+    }
+  }
 
   @override
   void initState() {
@@ -42,19 +53,12 @@ class _FoldersScreenState extends State<FoldersScreen> {
           Provider.of<VideoProvider>(context, listen: false).fetchMedia());
     });
 
-    _controller.addListener(() {
-      if (_controller.position.atEdge) {
-        if (_controller.position.pixels == 0) {
-          setState(() => showBorder = false);
-        }
-      } else {
-        setState(() => showBorder = true);
-      }
-    });
+    _controller.addListener(() => checkScrollPosition());
   }
 
   @override
   void dispose() {
+    _controller.removeListener(() => checkScrollPosition());
     _controller.dispose();
     super.dispose();
   }

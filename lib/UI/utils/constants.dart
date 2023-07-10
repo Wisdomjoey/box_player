@@ -5,7 +5,7 @@ class Constants {
   static const Color primaryDark = Color.fromARGB(255, 6, 66, 10);
   static const Color secondary = Color.fromARGB(255, 36, 55, 37);
   static const Color bottomBar = Color.fromARGB(255, 13, 43, 16);
-  static const Color textColor = Color.fromARGB(255, 212, 212, 212);
+  static const Color textColor = Color.fromARGB(255, 234, 234, 234);
 
   static const List<String> videoFormats = [
     '.webm',

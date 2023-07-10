@@ -83,6 +83,7 @@ class FolderView extends StatelessWidget {
                                   provider.addSelected(e['pathName']);
                                 }
                               },
+                              splashColor: Colors.transparent,
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 15, vertical: 0),

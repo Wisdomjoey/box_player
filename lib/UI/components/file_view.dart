@@ -1,4 +1,4 @@
-import 'package:box_player/UI/components/player.dart';
+import 'package:box_player/UI/screens/player_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart' as path;
@@ -43,7 +43,7 @@ class FileView extends StatelessWidget {
                     }
                   } else {
                     Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => Player(
+                      builder: (context) => PlayerScreen(
                         videoPath: e,
                       ),
                     ));

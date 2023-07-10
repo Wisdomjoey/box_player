@@ -15,6 +15,11 @@ class VideoProvider extends ChangeNotifier {
   final List<String> _videos = [];
   List<String> get videos => _videos;
 
+  final Map<String, Map<String, dynamic>> _directories = {
+    'Home': {},
+  };
+  Map<String, Map<String, dynamic>> get directories => _directories;
+
   final List<Map<String, dynamic>> _folderDirs = [];
   List<Map<String, dynamic>> get folderDirs => _folderDirs;
 
@@ -47,6 +52,40 @@ class VideoProvider extends ChangeNotifier {
 
   changeFileRoute(String route) {
     _fileRoute += route;
+    notifyListeners();
+  }
+
+  sortDirectories() {
+    final tempDirs = _folderDirs;
+    tempDirs.sort((a, b) => (b['Location'] as String)
+        .length
+        .compareTo((a['Location'] as String).length));
+
+    for (var ele in tempDirs) {
+      if (directories['Home'] != null) {
+        if (ele['pathName'] == 'Internal Memory') {
+          directories['Home']!.addAll(ele);
+        } else {
+          final dirs = (ele['Location'] as String)
+              .replaceFirst('/storage/emulated/0/', '')
+              .split('/');
+          Map directory = directories['Home']!;
+
+          for (var i = 0; i < dirs.length; i++) {
+            if (directory['dirs'].containsKey(dirs[i])) {
+              directory = directory['dirs'][dirs[i]];
+            } else {
+              directory['dirs'] = {};
+              directory['dirs'][dirs[i]] = {};
+              directory = directory['dirs'][dirs[i]];
+            }
+          }
+
+          directory.addAll(ele);
+        }
+      }
+    }
+
     notifyListeners();
   }
 

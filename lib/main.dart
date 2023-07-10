@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'PROVIDERS/app_provider.dart';
 import 'PROVIDERS/video_provider.dart';
 import 'UI/screens/folders_screen.dart';
 import 'UI/utils/constants.dart';
+import 'UTILS/system_utils.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,9 +17,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        systemNavigationBarColor: Constants.bottomBar));
+    SystemUtils.setSystemUIOverlay();
 
     return MultiProvider(
       providers: [
@@ -46,9 +44,10 @@ class MyApp extends StatelessWidget {
                 side: const BorderSide(color: Constants.textColor, width: 2)),
             tooltipTheme: TooltipThemeData(
                 textStyle: const TextStyle(color: Colors.black),
+                height: 25,
                 decoration: BoxDecoration(
                     color: Colors.white70,
-                    borderRadius: BorderRadius.circular(3)))),
+                    borderRadius: BorderRadius.circular(2)))),
         home: const FoldersScreen(),
       ),
     );
